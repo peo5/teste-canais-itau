@@ -119,14 +119,6 @@ class Teller:
 
         self.bank = bank
 
-    def set_bank(self, bank: Bank):
-        
-        self.bank = bank
-
-    def get_bank(self):
-
-        return self.bank
-
     def __transfer(self, value: float, source: Account, receiver: Account):
 
         """Função base para a realização de transferências"""
