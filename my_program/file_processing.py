@@ -1,7 +1,7 @@
 from typing import Generator
 
 
-def read_entries(input_file_name: str): Generator[dict, none, none]
+def read_entries(input_file_name: str) -> Generator[dict, None, None]:
 
     """Lê os registros de um arquivo
         os campos de cada registro devem ser separados por |

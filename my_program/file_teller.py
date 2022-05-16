@@ -1,5 +1,8 @@
+
 from transaction import Transaction
 from teller import Teller
+
+from error import InvalidInputError
 
 from file_processing import read_entries
 
@@ -7,7 +10,7 @@ from file_processing import read_entries
 class FileTeller(Teller):
 
 
-    def process_transaction_entry(self, entry: dict): -> Transaction
+    def process_transaction_entry(self, entry: dict) -> Transaction:
 
         source_params = {
             'name': entry['nome_emissor'].strip(),
@@ -34,14 +37,14 @@ class FileTeller(Teller):
         return Transaction(**transaction_params)
 
 
-    def execute_transaction_file(self, input_file_name): -> None
+    def execute_transaction_file(self, input_file_name) -> None:
 
         for entry in read_entries(input_file_name):
 
             try:
                 transaction = self.process_transaction_entry(entry)
                 self.execute_transaction(transaction)
-            except Exception as error:
+            except InvalidInputError as error:
                 print('não foi possível realizar a transação pois {}'.format(error)) 
 
             print('transação efetuada com sucesso!')
