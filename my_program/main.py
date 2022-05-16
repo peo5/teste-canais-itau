@@ -113,48 +113,77 @@ class Bank:
         return account
 
 
-def transfer(value: float, source: Account, receiver: Account):
+class Teller:
+    
+    def __init__(self, bank: Bank):
 
-    """Função base para a realização de transferências"""
+        self.bank = bank
 
-    if value < 0:
-        raise Exception('o valor para a transferência deve ser positivo')
+    def set_bank(self, bank: Bank):
         
-    if source == receiver:
-        raise Exception('a conta de origem e a de destino devem ser diferentes')
+        self.bank = bank
 
-    if source is None or receiver is None:
-        raise Exception('a conta de origem e a de destino devem ser especificadas')
+    def get_bank(self):
 
-    source.balance -= value
-    receiver.balance += value
+        return self.bank
 
+    def __transfer(self, value: float, source: Account, receiver: Account):
 
-def transfer_pix(value: float, source: Account, receiver: Account):
-    
-    if value > 5000:
-        raise Exception('o valor para a transferência PIX não deve exceder R$ 5000,00')
+        """Função base para a realização de transferências"""
 
-    transfer(value, source, receiver)
+        if value < 0:
+            raise Exception('o valor para a transferência deve ser positivo')
+            
+        if source == receiver:
+            raise Exception('a conta de origem e a de destino devem ser diferentes')
+
+        if source is None or receiver is None:
+            raise Exception('a conta de origem e a de destino devem ser especificadas')
+
+        source.balance -= value
+        receiver.balance += value
+
+    def __transfer_pix(self, value: float, source: Account, receiver: Account):
         
+        if value > 5000:
+            raise Exception('o valor para a transferência PIX não deve exceder R$ 5000,00')
 
-def transfer_ted(value: float, source: Account, receiver: Account):
-    
-    if value <= 5000:
-        raise Exception('o valor para a transferência TED deve ser superior a R$ 5000,00')
+        self.__transfer(value, source, receiver)
+        
+    def __transfer_ted(self, value: float, source: Account, receiver: Account):
+        
+        if value <= 5000:
+            raise Exception('o valor para a transferência TED deve ser superior a R$ 5000,00')
 
-    if value > 10000:
-        raise Exception('o valor para a transferência TED não deve exceder R$ 10000,00')
+        if value > 10000:
+            raise Exception('o valor para a transferência TED não deve exceder R$ 10000,00')
 
-    transfer(value, source, receiver)
+        self.__transfer(value, source, receiver)
 
 
-def transfer_doc(value: float, source: Account, receiver: Account):
-    
-    if value <= 10000:
-        raise Exception('o valor para a transferência DOC deve ser superior a R$ 10000,00')
+    def __transfer_doc(self, value: float, source: Account, receiver: Account):
+        
+        if value <= 10000:
+            raise Exception('o valor para a transferência DOC deve ser superior a R$ 10000,00')
 
-    transfer(value, source, receiver)
+        self.__transfer(value, source, receiver)
+
+    def execute_transaction(self, transaction: Transaction):
+
+        transfer_params = {
+            'source': transaction.source,
+            'receiver': transaction.receiver,
+            'value': transaction.value
+        }
+
+        if(transaction.type == 'PIX'):
+            self.__transfer_pix(**transfer_params)
+        elif(transaction.type == 'TED'):
+            self.__transfer_ted(**transfer_params)
+        elif(transaction.type == 'DOC'):
+            self.__transfer_doc(**transfer_params)
+        else:
+            raise Exception('o tipo da transação é inválido')
 
 
 def read_entries(input_file_name: str): 
@@ -176,71 +205,55 @@ def read_entries(input_file_name: str):
                 continue
             
             split_line = input_line.split('|')
-            named_entry = zip(row_names, split_line)
-            entry = {row_name:data.strip() for row_name, data in named_data}
+            named_fields = zip(row_names, split_line)
+            entry = {row_name:data.strip() for row_name, data in named_fields}
 
             yield entry
 
 
-def execute_transaction(transaction: Transaction):
+class FileTeller(Teller):
 
-    transfer_params = {
-        'source': transaction.source,
-        'receiver': transaction.receiver,
-        'value': transaction.value
-    }
+    def process_transaction_entry(self, entry: dict):
 
-    if(transaction.type == 'PIX'):
-        transfer_pix(**transfer_params)
-    elif(transaction.type == 'TED'):
-        transfer_ted(**transfer_params)
-    elif(transaction.type == 'DOC'):
-        transfer_doc(**transfer_params)
-    else:
-        raise Exception('o tipo da transação é inválido')
+        source_params = {
+            'name': entry['nome_emissor'].strip(),
+            'account_id': int(entry['conta_emissor']),
+            'agency_id': int(entry['agencia_emissor']),
+            'cpf': entry['cpf_emissor'].strip(),
+        }
 
+        receiver_params = {
+            'name': entry['nome_receptor'].strip(), 
+            'agency_id': int(entry['agencia_receptor']),
+            'account_id': int(entry['conta_receptor']),
+            'cpf': entry['cpf_receptor'].strip(),
+        }
 
-def process_transaction_entry(entry: dict, bank: Bank):
+        transaction_params = {
+            'transaction_id': int(entry['id_transferencia']),
+            'transaction_type': entry['tipo_transferencia'].strip(),
+            'transaction_value': float(entry['valor_transferencia']),
+            'source': self.bank.get_or_create_account(**source_params),
+            'receiver': self.bank.get_or_create_account(**receiver_params)
+        }
 
-    source_params = {
-        'name': entry['nome_emissor'].strip(),
-        'account_id': int(entry['conta_emissor']),
-        'agency_id': int(entry['agencia_emissor']),
-        'cpf': entry['cpf_emissor'].strip(),
-    }
+        return Transaction(**transaction_params)
 
-    receiver_params = {
-        'name': entry['nome_receptor'].strip(), 
-        'agency_id': int(entry['agencia_receptor']),
-        'account_id': int(entry['conta_receptor']),
-        'cpf': entry['cpf_receptor'].strip(),
-    }
+    def execute_transaction_file(self, input_file_name):
 
-    transaction_params = {
-        'transaction_id': int(entry['id_transferencia']),
-        'transaction_type': entry['tipo_transferencia'].strip(),
-        'transaction_value': float(entry['valor_transferencia']),
-        'source': bank.get_or_create_account(**source_params),
-        'receiver': bank.get_or_create_account(**receiver_params)
-    }
+        for entry in read_entries(input_file_name):
 
-    return Transaction(**transaction_params)
+            try:
+                transaction = self.process_transaction_entry(entry)
+                self.execute_transaction(transaction)
+            except Exception as error:
+                print('não foi possível realizar a transação pois {}'.format(error)) 
 
-
-def execute_transaction_file(input_file_name, bank):
-
-    for entry in read_entries(input_file_name):
-
-        try:
-            transaction = process_transaction_entry(entry, bank)
-            execute_transaction(transaction)
-        except Exception as error:
-            print('não foi possível realizar a transação pois {}'.format(error)) 
-
-        print('transação efetuada com sucesso!')
-        print('saldo do emissor: {}'.format(transaction.source.balance))
-        print('saldo do receptor: {}'.format(transaction.receiver.balance))
+            print('transação efetuada com sucesso!')
+            print('saldo do emissor: {}'.format(transaction.source.balance))
+            print('saldo do receptor: {}'.format(transaction.receiver.balance))
 
 
 bank = Bank()
-execute_transaction_file('my_program/entrada.txt', bank)
+teller = FileTeller(bank)
+teller.execute_transaction_file('my_program/entrada.txt')
