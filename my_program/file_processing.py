@@ -1,4 +1,9 @@
+
 from typing import Generator
+
+from error import InvalidInputError
+
+import re
 
 
 def read_entries(input_file_name: str) -> Generator[dict, None, None]:
@@ -24,5 +29,29 @@ def read_entries(input_file_name: str) -> Generator[dict, None, None]:
             entry = {row_name:data.strip() for row_name, data in named_fields}
 
             yield entry
+
+
+def read_id(string: str, name: str = 'o valor') -> int:
+     
+    if re.match(r'^\d*[1-9]\d*$', string) is None:
+        raise InvalidInputError('{} deve ser um número inteiro maior que zero'.format(name))
+
+    return int(string)
+    
+
+def read_money(string: str, name: str = 'o valor') -> float:
+
+    if re.match(r'^\d+(.\d{1,2})?$', string) is None:
+        raise InvalidInputError('{} deve ser um número positivo com até duas casas decimais'.format(name))
+
+    return float(string)
+
+
+def read_cpf(string: str, name: str = 'o valor') -> float:
+
+    if re.match(r'^\d{3}.\d{3}.\d{3}-\d{2}$', string) is None:
+        raise InvalidInputError('{} deve estar no formato DDD.DDD.DDD-DD'.format(name))
+
+    return string
 
 
