@@ -54,6 +54,7 @@ class Bank:
     def __init__(self):
         
         self.agencies = {}
+        self.transaction_history = {}
 
     def agency_exists(self, agency_id: int):
 
@@ -162,6 +163,9 @@ class Teller:
 
     def execute_transaction(self, transaction: Transaction):
 
+        if transaction.id in bank.transaction_history:
+            raise Exception('já existe uma transação com o id {}'.format(transaction.id))
+
         transfer_params = {
             'source': transaction.source,
             'receiver': transaction.receiver,
@@ -176,6 +180,8 @@ class Teller:
             self.__transfer_doc(**transfer_params)
         else:
             raise Exception('o tipo da transação é inválido')
+
+        bank.transaction_history[transaction.id] = transaction
 
 
 def read_entries(input_file_name: str): 
