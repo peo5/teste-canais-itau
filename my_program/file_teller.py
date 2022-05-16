@@ -42,13 +42,18 @@ class FileTeller(Teller):
         for entry in read_entries(input_file_name):
 
             try:
+
                 transaction = self.process_transaction_entry(entry)
                 self.execute_transaction(transaction)
-            except InvalidInputError as error:
-                print('não foi possível realizar a transação pois {}'.format(error)) 
 
-            print('transação efetuada com sucesso!')
-            print('saldo do emissor: {}'.format(transaction.source.balance))
-            print('saldo do receptor: {}'.format(transaction.receiver.balance))
+                print('Sua transferência foi realizada com sucesso!')
+                print('Saldo do emissor: R$ {:.2f}'.format(transaction.source.balance))
+                print('Saldo do receptor: R$ {:.2f}'.format(transaction.receiver.balance))
+                print()
+
+            except InvalidInputError as error:
+
+                print('Sua transferência não foi completada pois {}'.format(error)) 
+                print()
 
 
