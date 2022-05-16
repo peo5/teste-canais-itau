@@ -1,6 +1,6 @@
 class Account:
 
-    def __init__(self, account_id: int, name: str, cpf: str):
+    def __init__(self, account_id: int, name: str, cpf: str): -> None
 
         self.id = account_id
         self.name = name

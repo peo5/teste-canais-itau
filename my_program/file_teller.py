@@ -1,12 +1,13 @@
 from transaction import Transaction
-from bank import Bank
 from teller import Teller
 
 from file_processing import read_entries
 
+
 class FileTeller(Teller):
 
-    def process_transaction_entry(self, entry: dict):
+
+    def process_transaction_entry(self, entry: dict): -> Transaction
 
         source_params = {
             'name': entry['nome_emissor'].strip(),
@@ -32,7 +33,8 @@ class FileTeller(Teller):
 
         return Transaction(**transaction_params)
 
-    def execute_transaction_file(self, input_file_name):
+
+    def execute_transaction_file(self, input_file_name): -> None
 
         for entry in read_entries(input_file_name):
 
@@ -45,4 +47,5 @@ class FileTeller(Teller):
             print('transação efetuada com sucesso!')
             print('saldo do emissor: {}'.format(transaction.source.balance))
             print('saldo do receptor: {}'.format(transaction.receiver.balance))
+
 

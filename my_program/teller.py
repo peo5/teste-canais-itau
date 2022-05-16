@@ -2,13 +2,15 @@ from account import Account
 from transaction import Transaction 
 from bank import Bank
 
+
 class Teller:
     
-    def __init__(self, bank: Bank):
+    def __init__(self, bank: Bank): -> None
 
         self.bank = bank
 
-    def __transfer(self, value: float, source: Account, receiver: Account):
+
+    def __transfer(self, value: float, source: Account, receiver: Account): -> None
 
         """Função base para a realização de transferências"""
 
@@ -24,14 +26,16 @@ class Teller:
         source.balance -= value
         receiver.balance += value
 
-    def __transfer_pix(self, value: float, source: Account, receiver: Account):
+
+    def __transfer_pix(self, value: float, source: Account, receiver: Account): -> None
         
         if value > 5000:
             raise Exception('o valor para a transferência PIX não deve exceder R$ 5000,00')
 
         self.__transfer(value, source, receiver)
+
         
-    def __transfer_ted(self, value: float, source: Account, receiver: Account):
+    def __transfer_ted(self, value: float, source: Account, receiver: Account): -> None
         
         if value <= 5000:
             raise Exception('o valor para a transferência TED deve ser superior a R$ 5000,00')
@@ -42,14 +46,15 @@ class Teller:
         self.__transfer(value, source, receiver)
 
 
-    def __transfer_doc(self, value: float, source: Account, receiver: Account):
+    def __transfer_doc(self, value: float, source: Account, receiver: Account): -> None
         
         if value <= 10000:
             raise Exception('o valor para a transferência DOC deve ser superior a R$ 10000,00')
 
         self.__transfer(value, source, receiver)
 
-    def execute_transaction(self, transaction: Transaction):
+
+    def execute_transaction(self, transaction: Transaction): -> None
 
         if transaction.id in self.bank.transaction_history:
             raise Exception('já existe uma transação com o id {}'.format(transaction.id))
@@ -70,3 +75,5 @@ class Teller:
             raise Exception('o tipo da transação é inválido')
 
         self.bank.transaction_history[transaction.id] = transaction
+
+

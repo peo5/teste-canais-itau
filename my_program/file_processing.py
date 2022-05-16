@@ -1,4 +1,7 @@
-def read_entries(input_file_name: str): 
+from typing import Generator
+
+
+def read_entries(input_file_name: str): Generator[dict, none, none]
 
     """Lê os registros de um arquivo
         os campos de cada registro devem ser separados por |
@@ -21,4 +24,5 @@ def read_entries(input_file_name: str):
             entry = {row_name:data.strip() for row_name, data in named_fields}
 
             yield entry
+
 
