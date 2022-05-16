@@ -9,6 +9,18 @@ class Account:
         self.balance = 0.0
 
 
+class Transaction:
+    
+    def __init__(self, transaction_id: int, transaction_type: str, 
+        transaction_value: float, source: Account, receiver: Account):
+
+        self.id = transaction_id
+        self.type = transaction_type 
+        self.value = transaction_value
+        self.source = source
+        self.receiver = receiver
+
+
 class Agency:
 
     def __init__(self, agency_id: int):
@@ -145,9 +157,13 @@ def transfer_doc(value: float, source: Account, receiver: Account):
     transfer(value, source, receiver)
 
 
-def read_data(input_file_name: str): 
+def read_entries(input_file_name: str): 
 
-    """Lê os dados de um arquivo de transações"""
+    """Lê os registros de um arquivo
+        os campos de cada registro devem ser separados por |
+        o nome de cada campo deve ser especificado na primeira linha do arquivo
+        os nomes devem estar ordenados e separados por |
+        """
 
     with open(input_file_name, 'r') as input_file: 
 
@@ -164,52 +180,66 @@ def read_data(input_file_name: str):
 
             yield data
 
-def process_transactions(input_file_name):
 
-    bank = Bank()
+def execute_transaction(transaction: Transaction):
 
-    for data in read_data(input_file_name):
+    transfer_params = {
+        'source': transaction.source,
+        'receiver': transaction.receiver,
+        'value': transaction.value
+    }
 
-        transaction_id = int(data['id_transferencia'])
-        transaction_type = data['tipo_transferencia'].strip()
+    if(transaction.type == 'PIX'):
+        transfer_pix(**transfer_params)
+    elif(transaction.type == 'TED'):
+        transfer_ted(**transfer_params)
+    elif(transaction.type == 'DOC'):
+        transfer_doc(**transfer_params)
+    else:
+        raise Exception('o tipo da transação é inválido')
 
-        transaction_params = {
-            'value': float(data['valor_transferencia'])
-        }
 
-        source_params = {
-            'name': data['nome_emissor'].strip(),
-            'account_id': int(data['conta_emissor']),
-            'agency_id': int(data['agencia_emissor']),
-            'cpf': data['cpf_emissor'].strip(),
-        }
+def process_transaction_entry(entry: dict, bank: Bank):
 
-        receiver_params = {
-            'name': data['nome_receptor'].strip(), 
-            'agency_id': int(data['agencia_receptor']),
-            'account_id': int(data['conta_receptor']),
-            'cpf': data['cpf_receptor'].strip(),
-        }
+    source_params = {
+        'name': entry['nome_emissor'].strip(),
+        'account_id': int(entry['conta_emissor']),
+        'agency_id': int(entry['agencia_emissor']),
+        'cpf': entry['cpf_emissor'].strip(),
+    }
 
-        # recupera as contas
+    receiver_params = {
+        'name': entry['nome_receptor'].strip(), 
+        'agency_id': int(entry['agencia_receptor']),
+        'account_id': int(entry['conta_receptor']),
+        'cpf': entry['cpf_receptor'].strip(),
+    }
 
-        transaction_params['source'] = bank.get_or_create_account(**source_params)
-        transaction_params['receiver'] = bank.get_or_create_account(**receiver_params)
-        
-        # processa a transação
+    transaction_params = {
+        'transaction_id': int(entry['id_transferencia']),
+        'transaction_type': entry['tipo_transferencia'].strip(),
+        'transaction_value': float(entry['valor_transferencia']),
+        'source': bank.get_or_create_account(**source_params),
+        'receiver': bank.get_or_create_account(**receiver_params)
+    }
 
-        if(transaction_type == 'PIX'):
-            transfer_pix(**transaction_params)
-        elif(transaction_type == 'TED'):
-            transfer_ted(**transaction_params)
-        elif(transaction_type == 'DOC'):
-            transfer_doc(**transaction_params)
-        else:
-            raise Exception('o tipo da transação é inválido')
+    return Transaction(**transaction_params)
+
+
+def execute_transaction_file(input_file_name, bank):
+
+    for entry in read_entries(input_file_name):
+
+        try:
+            transaction = process_transaction_entry(entry, bank)
+            execute_transaction(transaction)
+        except Exception as error:
+            print('não foi possível realizar a transação pois {}'.format(error)) 
 
         print('transação efetuada com sucesso!')
-        print('saldo do emissor: {}'.format(transaction_params['source'].balance))
-        print('saldo do receptor: {}'.format(transaction_params['receiver'].balance))
+        print('saldo do emissor: {}'.format(transaction.source.balance))
+        print('saldo do receptor: {}'.format(transaction.receiver.balance))
 
 
-process_transactions('my_program/entrada.txt')
+bank = Bank()
+execute_transaction_file('my_program/entrada.txt', bank)
