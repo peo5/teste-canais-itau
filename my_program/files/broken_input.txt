@@ -1,0 +1,4 @@
+id_transferencia|valor_transferencia|tipo_transferencia|nome_emissor|agencia_emissor|conta_emissor|cpf_emissor|nome_receptor|agencia_reecj_receptor
+
+5|400|PIX|Maria|002|1335|112.113.114-15|Bruno|001|3333|123.123.123-13
+6|400|PIX|Maria|002|1335|112.113.114-15|Bruno|001|3333|123.123.123-13

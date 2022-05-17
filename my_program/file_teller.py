@@ -12,6 +12,15 @@ class FileTeller(Teller):
 
     def process_transaction_entry(self, entry: dict) -> Transaction:
 
+        expected_rows = [
+            'id_transferencia', 'valor_transferencia', 'tipo_transferencia', 
+            'nome_emissor', 'agencia_emissor', 'conta_emissor', 'cpf_emissor', 
+            'nome_receptor', 'agencia_receptor', 'conta_receptor', 'cpf_receptor']
+
+        for row in expected_rows:
+            if not row in entry:
+                raise InvalidInputError('a entrada não contém todos os campos necessários')
+
         source_params = {
             'name': entry['nome_emissor'],
             'account_id': read_id(entry['conta_emissor'], 'o id da conta do emissor'),

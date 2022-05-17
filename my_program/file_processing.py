@@ -21,10 +21,11 @@ def read_entries(input_file_name: str) -> Generator[dict, None, None]:
 
         for input_line in input_file:
             
-            if(input_line == '\n'):
+            split_line = input_line.split('|')
+
+            if len(split_line) < len(row_names):
                 continue
             
-            split_line = input_line.split('|')
             named_fields = zip(row_names, split_line)
             entry = {row_name:data.strip() for row_name, data in named_fields}
 
