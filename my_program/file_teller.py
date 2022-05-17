@@ -9,6 +9,12 @@ from file_processing import read_entries, read_id, read_money, read_cpf
 
 class FileTeller(Teller):
 
+    """Caixa de arquivos
+    
+    Extende o caixa comum com métodos para a execução de transações
+    a partir de arquivos
+    Utiliza os métodos do módulo file_processing
+    """
 
     def process_transaction_entry(self, entry: dict) -> Transaction:
 

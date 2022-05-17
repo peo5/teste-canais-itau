@@ -7,6 +7,12 @@ from error import InvalidInputError
 
 
 class Teller:
+
+    """Caixa
+    
+    Incluí métodos para a execução de transações entre contas
+    É vinculado a um banco, no qual as transações serão registradas
+    """
     
     def __init__(self, bank: Bank) -> None:
 

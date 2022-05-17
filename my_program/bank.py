@@ -9,6 +9,12 @@ from typing import Optional
 
 class Bank:
     
+    """Banco
+
+    Mantém um dicionário com o registro das agências adicionadas
+    Incluí métodos para gerenciar agências e contas
+    """
+    
     def __init__(self) -> None:
         
         self.agencies = {}
@@ -16,6 +22,8 @@ class Bank:
 
 
     def agency_exists(self, agency_id: int) -> bool:
+
+        """Verifica se a agência especificada pelo id existe"""
 
         return agency_id in self.agencies
 
@@ -32,6 +40,11 @@ class Bank:
 
 
     def get_agency(self, agency_id: int) -> Optional[Agency]:
+
+        """Recupera uma agência pelo id
+
+        Caso ela não exista, retorna None
+        """
         
         if self.agency_exists(agency_id):
             return self.agencies[agency_id]
@@ -40,6 +53,11 @@ class Bank:
 
 
     def account_exists(self, account_id: int, agency_id: int) -> bool:
+
+        """Verifica se a conta especificada existe na agência especificada
+        
+        A conta e a agência são especificadas pelos seus respectivos ids
+        """
         
         if not self.agency_exists(agency_id):
             return False
@@ -50,7 +68,9 @@ class Bank:
     def add_account(self, account: Account, agency_id: int) -> None:
         
         """Adiciona uma conta à agência especificada
-            caso a agência não exista, ela é criada"""
+        
+        Caso a agência não exista, ela é criada
+        """
         
         if not self.agency_exists(agency_id):
             self.add_agency(Agency(agency_id))
