@@ -29,7 +29,8 @@ class FileTeller(Teller):
         transaction_params = {
             'transaction_id': read_id(entry['id_transferencia']),
             'transaction_type': entry['tipo_transferencia'],
-            'transaction_value': read_money(entry['valor_transferencia'], 'o valor da transação'),
+            'transaction_value': read_money(entry['valor_transferencia'], 
+                'o valor da transação'),
             'source': self.bank.get_or_create_account(**source_params),
             'receiver': self.bank.get_or_create_account(**receiver_params)
         }
